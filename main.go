@@ -158,7 +158,7 @@ func main() {
 		panic(err)
 	}
 
-	author := flag.String("author", user.Username, "Start git repository.")
+	author := flag.String("author", user.Username, "Author name")
 
 	flag.Parse()
 
@@ -191,7 +191,7 @@ func writeTemplate(themeName string, files []File, authorName string) {
 		defer file.Close()
 
 		// Write data to the file
-		_, err = file.WriteString(formatContent(files[i].Contents, themeName, authorName))
+		_, err = file.WriteString(formatContent(authorName, themeName, files[i].Contents))
 		if err != nil {
 			panic(err)
 		}
@@ -224,7 +224,7 @@ func gitSetup(themeName string) {
 		panic(err)
 	}
 
-	fmt.Print("Git repo initialized successfully.")
+	fmt.Println("Git repo initialized successfully.")
 }
 
 func formatContent(authorName string, themeName string, content string) string {
@@ -235,7 +235,12 @@ func formatContent(authorName string, themeName string, content string) string {
 
 	content = re.ReplaceAllString(content, themeName)
 
+	fmt.Println(content)
+
 	re = regexp.MustCompile(author)
 
-	return re.ReplaceAllString(content, authorName)
+	content = re.ReplaceAllString(content, authorName)
+
+	fmt.Println(content)
+	return content
 }
