@@ -227,7 +227,7 @@ func gitSetup(themeName string) {
 	fmt.Print("Git repo initialized successfully.")
 }
 
-func formatContent(content string, themeName string, authorName string) string {
+func formatContent(authorName string, themeName string, content string) string {
 	myTheme := "[Mm]y[Tt]heme"
 	author := "[Yy]our [Nn]ame"
 
