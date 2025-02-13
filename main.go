@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"os/user"
 	"regexp"
+	"strings"
 )
 
 type File struct {
@@ -116,7 +117,7 @@ nav.main-nav {
 var themeJSON = File{Name: "theme.json",
 	Contents: `{
     "name": "MyTheme",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "description": "A Custom WordPress Theme.",
     "author": "Your Name",
     "theme-features": {
@@ -129,14 +130,36 @@ var themeJSON = File{Name: "theme.json",
 
 var version = File{Name: "__version__",
 	Contents: ` __VERSION__
-1.0.0
+0.0.0
 `}
 
 var pagePHP = File{Name: "page.php",
-	Contents: "Some Text"}
+	Contents: `<?php
+/*
+* File: mytheme/page.php
+*/
+
+if (!defined('ABSPATH')) {
+	exit;
+}
+
+// Page content hook
+add_action('wp', 'mytheme_page_content');
+?>`}
 
 var singlePHP = File{Name: "single.php",
-	Contents: "Some Text"}
+	Contents: `<?php
+/*
+ * File: mytheme/single.php
+ */
+ 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Single post content hook
+add_action('wp', 'mytheme_single_content');
+?>`}
 
 var customFunc = File{Name: "custom-functions.php",
 	Contents: `// mytheme/inc/custom-functions.php
@@ -146,7 +169,47 @@ function mytheme_custom_function() {
 `}
 
 var customTemp = File{Name: "custom-templates.php",
-	Contents: "Some Text"}
+	Contents: `
+<?php
+/**
+ * File: mytheme/inc/custom-templates.php
+ */
+ 
+// Some custom template content
+"Some Text"
+`}
+
+var indexPHP = File{Name: "index.php",
+	Contents: `
+<?php
+/**
+ * File: mytheme/index.php
+ */
+ 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Index content hook
+add_action('wp', 'mytheme_index_content');
+?>
+`}
+
+var homePHP = File{Name: "home.php",
+	Contents: `
+<?php
+/**
+ * File: mytheme/home.php
+ */
+ 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Home page content hook
+add_action('wp', 'mytheme_home_content');
+?>
+`}
 
 func main() {
 	themeName := flag.String("name", "theme", "Theme for WordPress.")
@@ -162,11 +225,11 @@ func main() {
 
 	flag.Parse()
 
-	rootFiles := []File{functionsPHP, headerPHP, footerPHP, styles, themeJSON, version}
+	rootFiles := []File{functionsPHP, headerPHP, footerPHP, styles, themeJSON, version, indexPHP, homePHP}
 	templateFiles := []File{pagePHP, singlePHP}
 	incFiles := []File{customFunc, customTemp}
 
-	project := Theme{Name: *themeName, RootFiles: rootFiles, TemplateFiles: templateFiles, IncFiles: incFiles}
+	project := Theme{Name: strings.Replace(*themeName, " ", "-", -1), RootFiles: rootFiles, TemplateFiles: templateFiles, IncFiles: incFiles}
 
 	os.Mkdir(project.Name, 0755)
 	os.Mkdir(project.Name+"/template-parts", 0755)
@@ -179,6 +242,8 @@ func main() {
 	if *git == "true" {
 		gitSetup(project.Name)
 	}
+
+	fmt.Println("Theme started successfully!")
 }
 
 func writeTemplate(themeName string, files []File, authorName string) {
@@ -235,12 +300,9 @@ func formatContent(authorName string, themeName string, content string) string {
 
 	content = re.ReplaceAllString(content, themeName)
 
-	fmt.Println(content)
-
 	re = regexp.MustCompile(author)
 
 	content = re.ReplaceAllString(content, authorName)
 
-	fmt.Println(content)
 	return content
 }
